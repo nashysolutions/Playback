@@ -55,6 +55,10 @@ open class VideoPlayerViewController: UIViewController {
             })
     }
     
+    public func sendPlayerViewToBack() {
+        view.sendSubviewToBack(playerView)
+    }
+    
     open func playerItem() -> AVPlayerItem? {
         return nil
     }
