@@ -20,5 +20,12 @@ final class HomeViewController: VideoPlayerViewController {
         }
         return AVPlayerItem(url: url)
     }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        // optional
+        sendPlayerViewToBack()
+    }
 }
 ```
