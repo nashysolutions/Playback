@@ -5,6 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "Playback",
+    platforms: [.iOS(.v14)],
     products: [
         .library(
             name: "Playback",
