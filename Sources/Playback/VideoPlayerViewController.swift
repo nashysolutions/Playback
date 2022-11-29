@@ -1,15 +1,11 @@
 import UIKit
 import AVFoundation
 
-open class VideoPlayerViewController: UIViewController {
-    
-    var currentTime: CMTime?
+open class VideoPlayerViewController: UIViewController, VideoPlayerGatewayHandler {
     
     private let playerView = VideoPlayerView()
     
-    private var playerItemDidReachEndObserver: NSObjectProtocol?
-    private var appDidBecomeActiveObserver: NSObjectProtocol?
-    private var appWillResignActiveObserver: NSObjectProtocol?
+    private let gateway = VideoPlayerGateway()
     
     override open func viewDidLoad() {
         super.viewDidLoad()
@@ -26,33 +22,6 @@ open class VideoPlayerViewController: UIViewController {
         if let playerItem = playerItem() {
             playerView.player = AVPlayer(playerItem: playerItem)
         }
-        
-        let center = NotificationCenter.default
-        playerItemDidReachEndObserver = center.addObserver(
-            forName: NSNotification.Name.AVPlayerItemDidPlayToEndTime,
-            object: nil,
-            queue: nil,
-            using: { _ in
-                if self.shouldReplay() {
-                    self.playerView.player?.play(atTime: .zero)
-                }
-            })
-        
-        appDidBecomeActiveObserver = center.addObserver(
-            forName: UIApplication.didBecomeActiveNotification,
-            object: nil,
-            queue: nil,
-            using: { _ in
-                self.play()
-            })
-        
-        appWillResignActiveObserver = center.addObserver(
-            forName: UIApplication.willResignActiveNotification,
-            object: nil,
-            queue: nil,
-            using: { _ in
-                self.pause(logCurrentTime: true)
-            })
     }
     
     public func sendPlayerViewToBack() {
@@ -65,7 +34,7 @@ open class VideoPlayerViewController: UIViewController {
     
     override open func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        playerView.player?.play(atTime: currentTime)
+        playerView.player?.play(atTime: gateway.currentTime)
     }
     
     override open func viewDidDisappear(_ animated: Bool) {
@@ -74,20 +43,23 @@ open class VideoPlayerViewController: UIViewController {
     }
     
     public func play() {
-        playerView.player?.play(atTime: currentTime)
+        playerView.player?.play(atTime: gateway.currentTime)
     }
     
+    @available(iOS, renamed: "pause")
     public func pause(logCurrentTime logTime: Bool) {
-        if let player = playerView.player {
-            player.pause()
-            if logTime {
-                currentTime = player.currentTime()
-            }
-        }
+        pause()
     }
     
     open func shouldReplay() -> Bool {
         return false
+    }
+    
+    public func pause() {
+        if let player = playerView.player {
+            player.pause()
+            gateway.currentTime = player.currentTime()
+        }
     }
 }
 
